@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitor de Página</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Leitor de Página</h2>
+
+        <div class="section actions">
+            <button id="btn-read-all" class="main-btn">Ler página inteira</button>
+            <button id="btn-read-selection" class="main-btn">Ler seleção</button>
+            <button id="btn-stop" class="main-btn">Parar leitura</button>
+        </div>
+
+        <div class="section slider-group">
+            <div class="label-row">
+                <label for="speed-range">Velocidade: <span id="speed-value">1x</span></label>
+            </div>
+            <input type="range" id="speed-range" min="0.5" max="1.5" step="0.1" value="1">
+        </div>
+
+        <div class="section slider-group">
+            <div class="label-row">
+                <label for="pitch-range">Tom: <span id="pitch-value">1</span></label>
+            </div>
+            <input type="range" id="pitch-range" min="1" max="5" step="0.1" value="1">
+        </div>
+
+        <div class="section font-control">
+            <label class="control-label">Aumentar fonte na página</label>
+            <div class="font-buttons">
+                <button id="btn-decrease-font" class="small-btn">-</button>
+                <button id="btn-increase-font" class="small-btn">+</button>
+            </div>
+        </div>
+
+        <div class="section checkbox-group">
+            <label class="checkbox-container">
+                <input type="checkbox" id="highlight-toggle">
+                <span class="checkmark-label">Destacar frase lida</span>
+            </label>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
