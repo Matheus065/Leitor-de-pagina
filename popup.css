@@ -114,3 +114,37 @@ input[type=range] {
     margin-right: 8px;
     cursor: pointer;
 }
+
+/* Container dos botões e do número */
+.font-buttons {
+    display: flex;
+    align-items: center; /* Alinha verticalmente */
+    gap: 10px; /* Espaço entre os elementos */
+}
+
+/* O estilo do número (Aplicado aos dois mostradores) */
+#font-size-display, #sel-size-display {
+    font-size: 14px;
+    font-weight: bold;
+    color: #555;
+    min-width: 45px;
+    text-align: center;
+}
+
+/* (Seus botões continuam iguais) */
+.small-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.small-btn:hover {
+    background-color: #eee;
+}

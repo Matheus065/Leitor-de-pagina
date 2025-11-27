@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leitor de Página</title>
     <link rel="stylesheet" href="popup.css">
 </head>
-
 <body>
     <div class="container">
         <h2>Leitor de Página</h2>
@@ -22,7 +20,7 @@
             <div class="label-row">
                 <label for="speed-range">Velocidade: <span id="speed-value">1x</span></label>
             </div>
-            <input type="range" id="speed-range" min="0.5" max="1.5" step="0.1" value="1">
+            <input type="range" id="speed-range" min="0.5" max="2.5" step="0.25" value="1">
         </div>
 
         <div class="section slider-group">
@@ -36,19 +34,28 @@
             <label class="control-label">Aumentar fonte na página</label>
             <div class="font-buttons">
                 <button id="btn-decrease-font" class="small-btn">-</button>
+                <span id="font-size-display">100%</span>
                 <button id="btn-increase-font" class="small-btn">+</button>
             </div>
         </div>
 
-        <div class="section checkbox-group">
+        <div class="section font-control" style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px;">
+            <label class="control-label">Tamanho do texto selecionado</label>
+            <div class="font-buttons">
+                <button id="btn-decrease-sel" class="small-btn">-</button>
+                <span id="sel-size-display">100%</span>
+                <button id="btn-increase-sel" class="small-btn">+</button>
+            </div>
+        </div>
+
+        <div class="section checkbox-group" style="margin-top: 15px;">
             <label class="checkbox-container">
                 <input type="checkbox" id="highlight-toggle">
-                <span class="checkmark-label">Destacar frase lida</span>
+                <span class="checkmark-label">Destacar frase lida (Modo Foco)</span>
             </label>
         </div>
     </div>
 
     <script src="popup.js"></script>
 </body>
-
 </html>
