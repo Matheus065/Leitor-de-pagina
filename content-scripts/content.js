@@ -65,8 +65,9 @@ document.getElementById('v-stop-float').addEventListener('click', handlePauseRes
 // PARTE B: LÓGICA PRINCIPAL
 // ======================================================
 
-let currentText = ""; 
-let highlightModeActive = false; // Controla se o checkbox está marcado
+let currentText = "";
+let currentIndex = 0; // <- índice atual da leitura
+let lastUtterance = null;
 
 // Variáveis da Fonte (Página Inteira)
 let escalaFonteAtual = 100; 
@@ -202,64 +203,121 @@ function clearFocusMode() {
 
 function handlePauseResume() {
     const synth = window.speechSynthesis;
-    if (synth.paused) synth.resume(); else if (synth.speaking) synth.pause(); else synth.cancel();
+
+    // Se estiver pausado → retoma
+    if (synth.paused) {
+        synth.resume();
+        return;
+    }
+
+    // Se estiver falando → pausa
+    if (synth.speaking) {
+        synth.pause();
+        return;
+    }
+
+    // Se não estiver falando → retomar do ponto salvo
+    if (!synth.speaking && currentText.length > 0 && currentIndex > 0) {
+        readText(currentText, parseFloat(vSpeedInput?.value || 1), 1);
+    }
 }
+
 
 function readText(text, speed, pitch) {
     const synth = window.speechSynthesis;
-    synth.cancel(); 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = speed || 1; utterance.pitch = pitch || 1; utterance.lang = 'pt-BR'; 
+    synth.cancel();
+
+    // Caso seja continuação da leitura
+    const textToRead = text.substring(currentIndex);
+
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    lastUtterance = utterance;
+
+    utterance.rate = speed || 1;
+    utterance.pitch = pitch || 1;
+    utterance.lang = 'pt-BR';
+
+    // Atualiza currentIndex conforme fala
+    utterance.onboundary = (event) => {
+        if (event.name === "word") {
+            currentIndex += event.charLength;
+        }
+    };
+
+    // Reset ao terminar
+    utterance.onend = () => {
+        currentIndex = 0;
+    };
+
     const voices = synth.getVoices();
     const googleVoice = voices.find(v => v.name.includes("Google") && v.lang.includes("pt-BR"));
     if (googleVoice) utterance.voice = googleVoice;
+
     synth.speak(utterance);
 }
 
+
 // Função para alterar fonte E cor da seleção (com Reset no 100%)
 function alterarFonteSelecao(porcentagem) {
-    const selection = window.getSelection();
+    const sel = window.getSelection();
+    const texto = sel.toString().trim();
     const tamanhoEm = porcentagem / 100;
-    let range;
+
+    // 1. Se não há seleção, tenta pegar o último span usado
     let spanWrapper = null;
-    const existingSpans = document.querySelectorAll('span[data-v-resize="true"]');
-    
-    if (selection.rangeCount > 0 && selection.toString().trim() !== "") {
-        range = selection.getRangeAt(0);
-        if (selection.anchorNode.parentElement && selection.anchorNode.parentElement.hasAttribute('data-v-resize')) {
-            spanWrapper = selection.anchorNode.parentElement;
+    let range = null;
+
+    if (texto.length > 0 && sel.rangeCount > 0) {
+        range = sel.getRangeAt(0);
+
+        // Se já está dentro de um wrapper de resize
+        let node = sel.anchorNode;
+        while (node && node.parentElement) {
+            if (node.parentElement.hasAttribute("data-v-resize")) {
+                spanWrapper = node.parentElement;
+                break;
+            }
+            node = node.parentElement;
         }
-    } else if (existingSpans.length > 0) {
-        spanWrapper = existingSpans[existingSpans.length - 1]; 
     } else {
-        return; 
+        // Sem seleção → tentar usar o último span de resize
+        const spans = document.querySelectorAll('span[data-v-resize="true"]');
+        spanWrapper = spans.length > 0 ? spans[spans.length - 1] : null;
     }
 
-    // --- LÓGICA DE RESET (100%) ---
+    // 2. RESET → Quando porcentagem === 100%
     if (porcentagem === 100) {
         if (spanWrapper) {
-            // Remove o span e devolve o texto ao pai original (limpa formatação)
             const parent = spanWrapper.parentNode;
             while (spanWrapper.firstChild) parent.insertBefore(spanWrapper.firstChild, spanWrapper);
             parent.removeChild(spanWrapper);
         }
-        return; // Encerra aqui
+        return;
     }
 
-    // --- LÓGICA DE ALTERAÇÃO ---
+    // 3. APLICAR ALTERAÇÃO → Se já existe wrapper
     if (spanWrapper) {
-        spanWrapper.style.fontSize = tamanhoEm + "em";
-    } else if (range) {
+        spanWrapper.style.fontSize = `${tamanhoEm}em`;
+        return;
+    }
+
+    // 4. Criar novo wrapper (caso seja primeira vez)
+    if (range) {
         try {
             const newSpan = document.createElement("span");
             newSpan.setAttribute("data-v-resize", "true");
-            newSpan.style.backgroundColor = "rgba(255, 255, 0, 0.4)"; 
-            newSpan.style.color = "#000"; 
-            newSpan.style.fontSize = tamanhoEm + "em";
-            newSpan.style.display = "inline-block"; 
-            newSpan.style.lineHeight = "1.2";
-            range.surroundContents(newSpan);
-            selection.removeAllRanges(); 
-        } catch (error) { console.error("Erro span:", error); }
+            newSpan.style.fontSize = `${tamanhoEm}em`;
+            newSpan.style.lineHeight = "1.3";
+            newSpan.style.display = "inline-block";
+
+            // Caso o highlight já tenha criado um span dentro,
+            // nós envolvemos tudo corretamente
+            newSpan.appendChild(range.extractContents());
+            range.insertNode(newSpan);
+
+            sel.removeAllRanges(); // limpa visual da seleção
+        } catch (e) {
+            console.error("Erro ao aplicar resize:", e);
+        }
     }
 }
